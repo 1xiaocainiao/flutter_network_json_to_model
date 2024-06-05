@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:ai_app/tools/Webservice/request_request_list_container.dart';
 import 'package:ai_app/tools/Webservice/request_result_container.dart';
 import 'package:flutter/material.dart';
 
@@ -97,43 +96,49 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
 
-    // final jsonString = '''
-    //     {
-    //       "code": "200",
-    //       "message": "请求成功",
-    //       "data": [
-    //         {
-    //         "title": "示例标题1",
-    //         "description": "示例描述"
-    //       },
-    //       {
-    //         "title": "示例标题2",
-    //         "description": "示例描述"
-    //       }
-    //       ]
-    //     }
-    //   ''';
+    final jsonString = '''
+        {
+          "code": "200",
+          "message": "请求成功",
+          "data": [
+            {
+            "title": "示例标题1",
+            "description": "示例描述"
+          },
+          {
+            "title": "示例标题2",
+            "description": "示例描述"
+          }
+          ]
+        }
+      ''';
     //   var value = jsonDecode(jsonString);
     //   print("返回数据 $value");
 
     //   final container = RequestResultListContainer<QueryData>(value, QueryData.fromJson);
     //   print(container.value![1].title);
 
-     final jsonString = '''
-        {
-          "code": "200",
-          "message": "请求成功",
-          "data": {
-            "title": "示例标题1",
-            "description": "示例描述"
-          }
-        }
-      ''';
+    //  final jsonString = '''
+    //     {
+    //       "code": "200",
+    //       "message": "请求成功",
+    //       "data": {
+    //         "title": "示例标题1",
+    //         "description": "示例描述"
+    //       }
+    //     }
+    //   ''';
       var value = jsonDecode(jsonString);
       print("返回数据 $value");
 
-      final container = RequestResultContainer<QueryData>(value, QueryData.fromJson);
-      print(container.value!.title);
+      // final container = RequestResultContainer<QueryData>(value, QueryData.fromJson);
+      // print(container.value!.title);
+
+      // final container = RequestResultContainer<QueryData>(value, RequestReusltType.model, QueryData.fromJson);
+      // print(container.value!.title);
+
+      final container = RequestResultContainer<QueryData>(value, RequestReusltType.array, deserializable: QueryData.fromJson);
+      print(container.values![1].title);
   }
 
   @override

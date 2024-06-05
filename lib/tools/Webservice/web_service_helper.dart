@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:ai_app/config.dart';
+import 'package:ai_app/tools/Webservice/api_throwable.dart';
 import 'package:ai_app/tools/Webservice/file_info_model.dart';
-import 'package:ai_app/tools/Webservice/request_request_list_container.dart';
 import 'package:ai_app/tools/Webservice/request_result_container.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
@@ -36,7 +36,27 @@ class WebServiceHelper {
     return map;
   }
 
-  static Future<T> request<T>(Map<String, dynamic> map, String apiName,
+  static Future<RequestResultContainer<T>> requestOriginData<T>(Map<String, dynamic> map, String apiName) async {
+    // final body = AESHelper().encrypt(json.encode(await toMap(map, apiName)));
+    final body = await toMap(map, apiName);
+    print("request body $map");
+    Response response = await dio.post(apiUrl, data: body);
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      // final data = AESHelper().decrypt(response.data);
+      var value = jsonDecode(response.data);
+      // String content = json.decode(AESHelper().decrypt(response.data));
+      print(value);
+      final container = RequestResultContainer<T>(value, RequestReusltType.originData);
+      return container;
+    } else {
+      return RequestResultContainer<T>({}, 
+      RequestReusltType.originData,
+      error: ApiThrowable("-1", info: "未知错误"));
+    }
+  }
+
+  static Future<RequestResultContainer<T>> request<T>(Map<String, dynamic> map, String apiName,
       Function(Map<String, dynamic>) deserializable) async {
     // final body = AESHelper().encrypt(json.encode(await toMap(map, apiName)));
     final body = await toMap(map, apiName);
@@ -48,12 +68,17 @@ class WebServiceHelper {
       var value = jsonDecode(response.data);
       // String content = json.decode(AESHelper().decrypt(response.data));
       print(value);
-      return deserializable(value);
+      final container = RequestResultContainer<T>(value, RequestReusltType.model, deserializable: deserializable);
+      return container;
+    } else {
+      return RequestResultContainer<T>({}, 
+      RequestReusltType.model, 
+      deserializable: deserializable, 
+      error: ApiThrowable("-1", info: "未知错误"));
     }
-    throw Exception("网络错误");
   }
 
-  static Future<RequestResultListContainer<T>> requestList<T>(
+  static Future<RequestResultContainer<T>> requestList<T>(
       Map<String, dynamic> map, String apiName, Function(Map<String, dynamic>) deserializable) async {
     final resultMap = await toMap(map, "");
     print("请求 $resultMap");
@@ -66,10 +91,14 @@ class WebServiceHelper {
       var value = jsonDecode(response.data);
       print("返回数据 $value");
 
-      final container = RequestResultListContainer<T>(value, deserializable);
+      final container = RequestResultContainer<T>(value, RequestReusltType.array, deserializable: deserializable);
       return container;
+    } else {
+      return RequestResultContainer<T>({}, 
+      RequestReusltType.array, 
+      deserializable: deserializable, 
+      error: ApiThrowable("-1", info: "未知错误"));
     }
-    throw Exception("网络错误");
   }
 
   static Future<RequestResultContainer<T>> uploadImages<T>(Map<String, dynamic> map, String apiName,
@@ -91,11 +120,15 @@ class WebServiceHelper {
       // String content = json.decode(AESHelper().decrypt(response.data));
       print(value);
 
-      final container = RequestResultContainer<T>(value, deserializable);
+      final container = RequestResultContainer<T>(value, RequestReusltType.model, deserializable: deserializable);
 
       return container;
+    } else {
+      return RequestResultContainer<T>({}, 
+      RequestReusltType.model, 
+      deserializable: deserializable, 
+      error: ApiThrowable("-1", info: "未知错误"));
     }
-    throw Exception("网络错误");
   }
 
   static Future<T> uploadFiles<T>(Map<String, dynamic> map, String apiName,

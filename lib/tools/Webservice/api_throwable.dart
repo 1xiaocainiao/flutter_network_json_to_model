@@ -1,6 +1,6 @@
 
 
-class ApiThrowable implements Exception {
+class ApiThrowable extends Error {
   String code = "";
   String? info;
 
