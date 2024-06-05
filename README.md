@@ -1,0 +1,2 @@
+# flutter_network_json_to_model
+flutter_network_json_to_model
