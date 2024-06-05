@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ai_app/tools/Webservice/request_result_container.dart';
+import 'package:ai_app/tools/cache_helper.dart';
 import 'package:flutter/material.dart';
 
 class QueryData {
@@ -17,7 +18,6 @@ class QueryData {
   Map<String, dynamic> toJson() => _$QueryDataToJson(this);
 }
 
-
 QueryData _$QueryDataFromJson(Map<String, dynamic> json) => QueryData(
       title: json['title'] as String,
       description: json['description'] as String,
@@ -28,13 +28,20 @@ Map<String, dynamic> _$QueryDataToJson(QueryData instance) => <String, dynamic>{
       'description': instance.description,
     };
 
-
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final app = MyApp();
+  app.initHelpers();
+  runApp(app);
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  void initHelpers() async {
+    await CacheHelper.shared();
+  }
 
   // This widget is the root of your application.
   @override
@@ -86,7 +93,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    print(CacheHelper.getInt("key"));
+  }
+
+  void _incrementCounter() async {
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -94,6 +109,11 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+
+      if (_counter == 1) {
+        CacheHelper.setInt("key", _counter);
+        print("保存成功");
+      }
     });
 
     final jsonString = '''
@@ -128,17 +148,19 @@ class _MyHomePageState extends State<MyHomePage> {
     //       }
     //     }
     //   ''';
-      var value = jsonDecode(jsonString);
-      print("返回数据 $value");
+    var value = jsonDecode(jsonString);
+    print("返回数据 $value");
 
-      // final container = RequestResultContainer<QueryData>(value, QueryData.fromJson);
-      // print(container.value!.title);
+    // final container = RequestResultContainer<QueryData>(value, QueryData.fromJson);
+    // print(container.value!.title);
 
-      // final container = RequestResultContainer<QueryData>(value, RequestReusltType.model, QueryData.fromJson);
-      // print(container.value!.title);
+    // final container = RequestResultContainer<QueryData>(value, RequestReusltType.model, QueryData.fromJson);
+    // print(container.value!.title);
 
-      final container = RequestResultContainer<QueryData>(value, RequestReusltType.array, deserializable: QueryData.fromJson);
-      print(container.values![1].title);
+    final container = RequestResultContainer<QueryData>(
+        value, RequestReusltType.array,
+        deserializable: QueryData.fromJson);
+    print(container.values![1].title);
   }
 
   @override
